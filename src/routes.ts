@@ -1,5 +1,5 @@
 import { Router } from 'express';
 
-const router = Router();
+const routes = Router();
 
-export default { router };
+export default { routes };
