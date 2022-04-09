@@ -6,7 +6,8 @@
   "author": "Viviane-Queiroz <vivianedsqueiroz@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon src/server.ts"
+    "dev": "nodemon src/server.ts",
+    "test": "jest"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^2.2.1",
