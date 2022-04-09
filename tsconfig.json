@@ -16,7 +16,8 @@
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@services/*": ["./services"]
+      "@services/*": ["./services"],
+      "@schemas/*": ["./schemas/*"] 
     }
   },
   "include": ["src"],
