@@ -1,7 +1,9 @@
+import { Readable } from 'stream';
 import mongoose from 'mongoose';
 import Contact from '../../src/schemas/Contact';
+import Tag from '../../src/schemas/Tag';
 
-const { MongoClient } = require('mongodb');
+import ImportContactsService from '../../src/services/ImportContactsService';
 
 describe('Import contacts', () => {
   beforeAll(async () => {
@@ -21,14 +23,42 @@ describe('Import contacts', () => {
   });
 
   it('should be able to import new contacts', async () => {
-    await Contact.create({ email: 'test@test.com' });
+    const contactsFileStream = Readable.from([
+      'test1@test.com\n',
+      'test2@test.com\n',
+      'test3@test.com\n',
+    ]);
 
-    const list = await Contact.find({});
+    const importContacts = new ImportContactsService();
 
-    expect(list).toEqual(
+    await importContacts.run(contactsFileStream, ['Students', 'Class A']);
+
+    const createdTags = await Tag.find({}).lean();
+
+    expect(createdTags).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ email: 'test@test.com' }),
+        expect.objectContaining({ title: 'Students' }),
+        expect.objectContaining({ title: 'Class A' }),
       ]),
     );
+
+    const createdTagsIds = createdTags.map(tag => tag._id);
+
+    const createdContacts = await Contact.find({}).lean();
+
+    expect(createdContacts).toEqual([
+      expect.objectContaining({
+        email: 'test1@test.com',
+        tags: createdTagsIds,
+      }),
+      expect.objectContaining({
+        email: 'test2@test.com',
+        tags: createdTagsIds,
+      }),
+      expect.objectContaining({
+        email: 'test3@test.com',
+        tags: createdTagsIds,
+      }),
+    ]);
   });
 });
