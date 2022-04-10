@@ -20,6 +20,7 @@ describe('Import contacts', () => {
 
   beforeEach(async () => {
     await Contact.deleteMany({});
+    await Tag.deleteMany({});
   });
 
   it('should be able to import new contacts', async () => {
@@ -60,5 +61,28 @@ describe('Import contacts', () => {
         tags: createdTagsIds,
       }),
     ]);
+  });
+
+  it('should not be able to recreate existing tags', async () => {
+    const contactsFileStream = Readable.from([
+      'test1@test.com\n',
+      'test2@test.com\n',
+      'test3@test.com\n',
+    ]);
+
+    const importContacts = new ImportContactsService();
+
+    await Tag.create({ title: 'Students' });
+
+    await importContacts.run(contactsFileStream, ['Students', 'Class A']);
+
+    const createdTags = await Tag.find({}).lean();
+
+    expect(createdTags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ title: 'Students' }),
+        expect.objectContaining({ title: 'Class A' }),
+      ]),
+    );
   });
 });
