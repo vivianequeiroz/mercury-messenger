@@ -63,7 +63,7 @@ describe('Import contacts', () => {
     ]);
   });
 
-  it('should not be able to recreate existing tags', async () => {
+  it('should not recreate existing tags', async () => {
     const contactsFileStream = Readable.from([
       'test1@test.com\n',
       'test2@test.com\n',
@@ -84,5 +84,32 @@ describe('Import contacts', () => {
         expect.objectContaining({ title: 'Class A' }),
       ]),
     );
+  });
+
+  it('should not recreate existing contacts', async () => {
+    const contactsFileStream = Readable.from([
+      'test1@test.com\n',
+      'test2@test.com\n',
+      'test3@test.com\n',
+    ]);
+
+    const importContacts = new ImportContactsService();
+
+    const tag = await Tag.create({ title: 'Students' });
+    await Contact.create({ email: 'test1@test.com', tags: [tag._id] });
+
+    await importContacts.run(contactsFileStream, ['Class A']);
+
+    const contacts: any = await Contact.find({
+      email: 'test1@test.com',
+    }).lean();
+
+    expect(contacts.length).toBe(1);
+    expect(contacts[0].tags).toEqual([
+      expect.arrayContaining([
+        expect.objectContaining({ title: 'Students' }),
+        expect.objectContaining({ title: 'Class A' }),
+      ]),
+    ]);
   });
 });
